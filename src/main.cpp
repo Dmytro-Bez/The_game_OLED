@@ -17,7 +17,9 @@
 #define DEVICE_NAME "DEV01"                                                            //The name of the device. This MUST match up with the name defined in the AWS console
 #define AWS_IOT_ENDPOINT "xxx.amazonaws.com"              //The MQTTT endpoint for the device (unique for each AWS account but shared amongst devices within the account)
 #define AWS_IOT_TOPIC "/"+ DEVICE_NAME+ "/comand"                                      //The MQTT topic that this device should publish to
-#define AWS_MAX_RECONNECT_TRIES 50  
+#define AWS_MAX_RECONNECT_TRIES 50 
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 //=============================//
 //wifi configuration
 const int conf_par_size = 25;
@@ -27,6 +29,7 @@ bool conf_button_pressed = false;
 const int max_connect_attempts = 10;                             //variable repeat connect
 MQTTClient client = MQTTClient(256);
 WiFiClientSecure net = WiFiClientSecure();
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 //==============================//
 void init_wire();                                                   //Initialization I2C
 bool connect_to_aws();                                              //Connect to aws
@@ -39,7 +42,14 @@ void disconnect_wifi();                                             //Disconnect
 
 void setup() {
   Serial.begin(115200);
-  init_wire();                                                      //Wire bus initialization
+  init_wire(); 
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+  delay(2000);
+  display.clearDisplay();
+  display.setTextColor(WHITE);                                                     //Wire bus initialization
   if (String(conf_wifi_ssid) == "" ||  String(conf_wifi_password) == "") {  //if we don't have credentials to wifi then lets start ble for initialization
     
   } else {   
@@ -49,6 +59,7 @@ void setup() {
 }
 
 void loop() {
+  delay(5000);
   send_data_to_aws();                                                     //Data transfer
 }
 
@@ -117,7 +128,12 @@ void send_data_to_aws(){
   StaticJsonDocument<512> json_doc;                                                       //AWS object formation
   //JsonObject state_obj = json_doc.createNestedObject("state");
   //JsonObject reported_obj = state_obj.createNestedObject("reported");
-
+ 
+  // clear display
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.print("X");
 //=================================JSON=========================================//
   char json_buffer[512];
   serializeJson(json_doc, json_buffer);
@@ -144,6 +160,3 @@ void start_transfer() {
     } 
   }
 }
-
-
-
