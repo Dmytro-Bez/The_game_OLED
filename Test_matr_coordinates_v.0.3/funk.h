@@ -22,10 +22,11 @@ void first_menu();
 void get_won();
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();
+int get_move();
 
 /*----------FUNKTIONS----------*/
 void first_menu(){
-  delay(2000);
+  delay(1000);
   display.clearDisplay();                                 //Clear display
   display.setTextSize(1.5);             
   display.setTextColor(WHITE);        
@@ -46,7 +47,7 @@ void first_menu(){
 }
 
 void second_menu(){
-  delay(2000);
+  delay(1000);
   display.clearDisplay();                                 //Clear display
   display.drawLine(42, 0, 42, 63, WHITE);
   display.drawLine(84, 0, 84, 63, WHITE);
@@ -68,6 +69,23 @@ void second_menu(){
   Serial.println("-1-||-2-||-3-");
   Serial.println("=============");  
   Serial.println("");
+}
+
+int get_move(){
+  int mov;
+  //Get val numer 1-9
+  if(Serial.available()){
+    char enter_read = Serial.read();
+    Serial.println("Please enter a legal move(1-9)");
+    if(mov > 9 || mov < 1){
+      //Get legal numer 1-9
+      Serial.println(enter_read);
+    } else {
+      Serial.println("Please enter a legal move(1-9)");
+      enter_read = Serial.read();
+    }
+  }
+    return mov;
 }
 
 void get_won(){
