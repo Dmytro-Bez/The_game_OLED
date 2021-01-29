@@ -22,7 +22,7 @@ void first_menu();
 void get_won();
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();
-int get_move();
+void coordinates();
 
 /*----------FUNKTIONS----------*/
 void first_menu(){
@@ -57,35 +57,12 @@ void second_menu(){
 
   /*----------MENU SERIAL PORT----------*/
   Serial.println("============="); 
-  Serial.println("-|-||-|-||-|-"); 
-  Serial.println("-|-||-|-||-|-"); 
-  Serial.println("-|-||-|-||-|-");
-  Serial.println("=============");  
-  Serial.print("");
-
-  Serial.println("============="); 
-  Serial.println("-7-||-8-||-9-"); 
+  Serial.println("-1-||-2-||-3-"); 
   Serial.println("-4-||-5-||-6-"); 
-  Serial.println("-1-||-2-||-3-");
+  Serial.println("-7-||-8-||-9-");
   Serial.println("=============");  
   Serial.println("");
-}
-
-int get_move(){
-  int mov;
-  //Get val numer 1-9
-  if(Serial.available()){
-    char enter_read = Serial.read();
-    Serial.println("Please enter a legal move(1-9)");
-    if(mov > 9 || mov < 1){
-      //Get legal numer 1-9
-      Serial.println(enter_read);
-    } else {
-      Serial.println("Please enter a legal move(1-9)");
-      enter_read = Serial.read();
-    }
-  }
-    return mov;
+  display.display();
 }
 
 void get_won(){
@@ -107,6 +84,33 @@ void get_won(){
   Serial.print("Please."); 
   Serial.println("Click the button to start a new game!");
   Serial.println("");
+}
+
+void coordinates(){
+  if (Serial.available() > 0){                         //is a character available?
+    delay(1000);
+    display.clearDisplay();                            //Clear display
+    second_menu();
+    char rx_byte = Serial.read();                      //get the character
+    if ((rx_byte >= '0') && (rx_byte <= '9')) {        //check if a number was received
+      Serial.print("Number received: ");
+      Serial.println(rx_byte);
+      display.setTextSize(2);             
+      display.setTextColor(WHITE);        
+      
+      if(rx_byte%2 == 0){
+        //display.setCursor(100,2);             
+        display.println("0"); 
+        display.display(); 
+      } else {
+        //display.setCursor(100,2);             
+        display.println("X"); 
+        display.display(); 
+      }
+    } else {
+      Serial.println("Not a number.");
+    }
+  }
 }
 
 void init_wire(){

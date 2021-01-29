@@ -16,11 +16,12 @@ void setup() {
 
 /*----------LOOP----------*/
 void loop() {
+  coordinates();
   conf_button_pressed = digitalRead(BUTTON_PIN);
   if((conf_button_pressed) &&(menu_flag==0)){
     second_menu(); 
     menu_flag = 1;
-    
+    coordinates();
   } else if((conf_button_pressed)&&(menu_flag==1)){
     first_menu();
     menu_flag = 0;
