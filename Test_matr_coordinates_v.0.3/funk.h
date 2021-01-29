@@ -11,6 +11,9 @@
 #define SCREEN_WIDTH 128                                  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64                                  // OLED display height, in pixels
 #define BUTTON_PIN 4                                      //button
+#define SIZE 3                                            //size arr
+#define NX 'X'                                              //X
+#define NY 'Y'                                              //Y
 
 /*----------VARIABLES----------*/
 bool conf_button_pressed = false;
@@ -18,13 +21,24 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
-void first_menu();
-void get_won();
+void first_menu();                                        //Input menu function
+void get_won();                                           //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
-void second_menu();
-void coordinates();
+void second_menu();                                       //Game board drawing function
+void input_data();                                        //Data retrieval function
+void creat_arr(int arr[SIZE][SIZE]);                      //Array fill function
+//void display_screen();                                    //Game board drawing function
 
 /*----------FUNKTIONS----------*/
+void creat_arr(int arr[SIZE][SIZE]){
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      arr[i][j] = 0;
+      Serial.println(arr[i][j]);
+    }
+  }
+}
+
 void first_menu(){
   delay(1000);
   display.clearDisplay();                                 //Clear display
@@ -47,12 +61,13 @@ void first_menu(){
 }
 
 void second_menu(){
+  
   delay(1000);
   display.clearDisplay();                                 //Clear display
-  display.drawLine(42, 0, 42, 63, WHITE);
-  display.drawLine(84, 0, 84, 63, WHITE);
-  display.drawLine(0, 21, 127, 21, WHITE);
-  display.drawLine(0, 42, 127, 42, WHITE);
+  display.drawLine(40, 0, 40, 63, WHITE);
+  display.drawLine(80, 0, 80, 63, WHITE);
+  display.drawLine(11, 21, 106, 21, WHITE);
+  display.drawLine(11, 40, 106, 40, WHITE);
   display.display();
 
   /*----------MENU SERIAL PORT----------*/
@@ -86,27 +101,48 @@ void get_won(){
   Serial.println("");
 }
 
-void coordinates(){
+void input_data(){
+  char rx_byte, ry_byte;
   if (Serial.available() > 0){                         //is a character available?
     delay(1000);
     display.clearDisplay();                            //Clear display
     second_menu();
-    char rx_byte = Serial.read();                      //get the character
-    if ((rx_byte >= '0') && (rx_byte <= '9')) {        //check if a number was received
+    rx_byte = Serial.read();                             //get the character
+    ry_byte = Serial.read();
+    if ((rx_byte || ry_byte >= '0') && (rx_byte || ry_byte <= '9')) {        //check if a number was received
       Serial.print("Number received: ");
-      Serial.println(rx_byte);
+      Serial.print(rx_byte);
+      Serial.println(ry_byte);
       display.setTextSize(2);             
       display.setTextColor(WHITE);        
       
       if(rx_byte%2 == 0){
-        //display.setCursor(100,2);             
+        display.setCursor(90,2);             
         display.println("0"); 
         display.display(); 
       } else {
-        //display.setCursor(100,2);             
+        display.setCursor(90,2);             
         display.println("X"); 
         display.display(); 
       }
+      if(ry_byte%2 == 0){
+        display.setCursor(105,2);             
+        display.println("0"); 
+        display.display(); 
+      } else {
+        display.setCursor(105,2);             
+        display.println("X"); 
+        display.display(); 
+      }
+      if(ry_byte%2 == 0){
+        display.setCursor(105,2);             
+        display.println("0"); 
+        display.display(); 
+      } else {
+        display.setCursor(105,2);             
+        display.println("X"); 
+        display.display(); 
+      }      
     } else {
       Serial.println("Not a number.");
     }
@@ -125,4 +161,12 @@ void IRAM_ATTR isr() {
   conf_button_pressed = !conf_button_pressed;
 }
 
+//void display_screen(){
+//  int width = SCREEN_WIDTH / 3;
+//  int height = SCREEN_HEIGHT / 3;
+//  delay(1000);
+//  display.clearDisplay();
+//  display.drawLine(width, height, width, height, WHITE);
+//  display.display();
+//}
 #endif
