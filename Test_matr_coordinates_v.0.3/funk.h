@@ -26,15 +26,35 @@ void get_won();                                           //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();                                       //Game board drawing function
 void input_data();                                        //Data retrieval function
-void creat_arr(int arr[SIZE][SIZE]);                      //Array fill function
+void creat_arr();                                         //Array fill function
+void print_matrix();                                      //Array print function
 //void display_screen();                                    //Game board drawing function
 
 /*----------FUNKTIONS----------*/
-void creat_arr(int arr[SIZE][SIZE]){
+void creat_arr(){
+  int arr[SIZE][SIZE];
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
       arr[i][j] = 0;
       Serial.println(arr[i][j]);
+    }
+  }
+}
+
+void print_matrix(){
+  int A[SIZE][SIZE];
+  
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      if(A[i][j] == 0){
+        display.setCursor(90,2);             
+        display.println("0"); 
+        display.display();
+      } else {
+        display.setCursor(105,2);             
+        display.println("X"); 
+        display.display();
+      }
     }
   }
 }
@@ -61,15 +81,19 @@ void first_menu(){
 }
 
 void second_menu(){
-  
   delay(1000);
   display.clearDisplay();                                 //Clear display
-  display.drawLine(40, 0, 40, 63, WHITE);
-  display.drawLine(80, 0, 80, 63, WHITE);
-  display.drawLine(11, 21, 106, 21, WHITE);
-  display.drawLine(11, 40, 106, 40, WHITE);
-  display.display();
+//  display.drawLine(40, 0, 40, 63, WHITE);
+//  display.drawLine(80, 0, 80, 63, WHITE);
+//  display.drawLine(11, 21, 106, 21, WHITE);
+//  display.drawLine(11, 40, 106, 40, WHITE);
 
+  display.drawLine(15, 21, 95, 21, WHITE);
+  display.drawLine(15, 43, 95, 43, WHITE);
+  display.drawLine(42, 0, 42, 63, WHITE);
+  display.drawLine(71, 0, 71, 63, WHITE);
+  display.setCursor(22,15);
+  display.display();
   /*----------MENU SERIAL PORT----------*/
   Serial.println("============="); 
   Serial.println("-1-||-2-||-3-"); 
@@ -117,32 +141,43 @@ void input_data(){
       display.setTextColor(WHITE);        
       
       if(rx_byte%2 == 0){
-        display.setCursor(90,2);             
+        //display.setCursor(80,2);
+        //display.setCursor(80,25);
+        //display.setCursor(80,47);
+        //display.setCursor(23,2);
+        //display.setCursor(53,2);
+        //display.setCursor(23,25);
+        //display.setCursor(23,47);
+        //display.setCursor(53,25); 
+        display.setCursor(53,47);                
         display.println("0"); 
         display.display(); 
       } else {
-        display.setCursor(90,2);             
+        //display.setCursor(80,2);
+        //display.setCursor(80,25); 
+        //display.setCursor(80,47);
+        //display.setCursor(23,2);
+        //display.setCursor(53,2);
+        //display.setCursor(23,25);
+        //display.setCursor(23,47);
+        //display.setCursor(53,25); 
+        display.setCursor(53,47);                
         display.println("X"); 
         display.display(); 
       }
-      if(ry_byte%2 == 0){
-        display.setCursor(105,2);             
-        display.println("0"); 
-        display.display(); 
-      } else {
-        display.setCursor(105,2);             
-        display.println("X"); 
-        display.display(); 
-      }
-      if(ry_byte%2 == 0){
-        display.setCursor(105,2);             
-        display.println("0"); 
-        display.display(); 
-      } else {
-        display.setCursor(105,2);             
-        display.println("X"); 
-        display.display(); 
-      }      
+//      if(ry_byte%2 == 0){
+//        //display.setCursor(53,2);
+//        //display.setCursor(23,2);
+//        display.setCursor(80,2);             
+//        display.println("0"); 
+//        display.display(); 
+//      } else {
+//        //display.setCursor(53,2);
+//        //display.setCursor(23,2);
+//        display.setCursor(80,2);             
+//        display.println("X"); 
+//        display.display(); 
+//      }     
     } else {
       Serial.println("Not a number.");
     }
@@ -161,12 +196,4 @@ void IRAM_ATTR isr() {
   conf_button_pressed = !conf_button_pressed;
 }
 
-//void display_screen(){
-//  int width = SCREEN_WIDTH / 3;
-//  int height = SCREEN_HEIGHT / 3;
-//  delay(1000);
-//  display.clearDisplay();
-//  display.drawLine(width, height, width, height, WHITE);
-//  display.display();
-//}
 #endif
