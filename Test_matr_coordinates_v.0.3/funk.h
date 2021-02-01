@@ -50,7 +50,7 @@ void print_matrix(){
   randomSeed(9);
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
-      (A[i][j] == random(3));
+      (A[i][j] = random(3));
     }
   }
   for(int i = 0; i < SIZE; i++){
@@ -59,11 +59,11 @@ void print_matrix(){
         display.setCursor(23+i*30,2+j*23);             
         display.println("0"); 
         display.display();
-      } else {
+      } else if(A[i][j] == 1){
         display.setCursor(23+i*30,2+j*23);             
         display.println("X"); 
         display.display();
-      }
+      } 
     }
   }
 }
