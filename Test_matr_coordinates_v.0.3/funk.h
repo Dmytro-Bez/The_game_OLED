@@ -43,15 +43,24 @@ void creat_arr(){
 
 void print_matrix(){
   int A[SIZE][SIZE];
-  
+  delay(1000);
+  display.clearDisplay();
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
+  randomSeed(9);
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      (A[i][j] == random(3));
+    }
+  }
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
       if(A[i][j] == 0){
-        display.setCursor(90,2);             
+        display.setCursor(23+i*30,2+j*23);             
         display.println("0"); 
         display.display();
       } else {
-        display.setCursor(105,2);             
+        display.setCursor(23+i*30,2+j*23);             
         display.println("X"); 
         display.display();
       }
@@ -87,7 +96,7 @@ void second_menu(){
 //  display.drawLine(80, 0, 80, 63, WHITE);
 //  display.drawLine(11, 21, 106, 21, WHITE);
 //  display.drawLine(11, 40, 106, 40, WHITE);
-
+print_matrix();
   display.drawLine(15, 21, 95, 21, WHITE);
   display.drawLine(15, 43, 95, 43, WHITE);
   display.drawLine(42, 0, 42, 63, WHITE);

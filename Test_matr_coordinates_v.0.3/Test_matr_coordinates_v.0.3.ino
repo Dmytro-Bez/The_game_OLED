@@ -11,19 +11,21 @@ void setup() {
   attachInterrupt(BUTTON_PIN, isr, FALLING);
 
   init_wire();                                            //Wire bus initialization
-  first_menu();
+  //first_menu();
+  second_menu();
+  
 }
 
 /*----------LOOP----------*/
 void loop() {
-  input_data();
-  conf_button_pressed = digitalRead(BUTTON_PIN);
-  if((conf_button_pressed) &&(menu_flag==0)){
-    second_menu(); 
-    menu_flag = 1;
-    
-  } else if((conf_button_pressed)&&(menu_flag==1)){
-    first_menu();
-    menu_flag = 0;
-  }
+//  input_data();
+//  conf_button_pressed = digitalRead(BUTTON_PIN);
+//  if((conf_button_pressed) &&(menu_flag==0)){
+//    second_menu(); 
+//    menu_flag = 1;
+//    
+//  } else if((conf_button_pressed)&&(menu_flag==1)){
+//    first_menu();
+//    menu_flag = 0;
+//  }
 }
