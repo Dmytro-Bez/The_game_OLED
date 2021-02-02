@@ -4,6 +4,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
 /*----------DEFINES----------*/
 #define PIN_RX  16                                        //Pin read 
@@ -12,11 +14,17 @@
 #define SCREEN_HEIGHT 64                                  // OLED display height, in pixels
 #define BUTTON_PIN 4                                      //button
 #define SIZE 3                                            //size arr
-#define NX 'X'                                              //X
-#define NY 'Y'                                              //Y
+#define NX 'X'                                            //X
+#define NY '0'                                            //0
+#define DEVICE_NAME "TIC"                                 //The name of the device. This MUST match up with the name defined in the AWS console 
 
 /*----------VARIABLES----------*/
 bool conf_button_pressed = false;
+const char* ssid = "EE";
+const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
+const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broker IP address, example const char* mqtt_server = "Х.Х.Х.Х"
+WiFiClient espClient;
+PubSubClient client(espClient);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 /*----------PROTOTYPE FUNCTIONS----------*/
@@ -25,22 +33,15 @@ void first_menu();                                        //Input menu function
 void get_won();                                           //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();                                       //Game board drawing function
-void input_data();                                        //Data retrieval function
-void creat_arr();                                         //Array fill function
 void print_matrix();                                      //Array print function
-//void display_screen();                                    //Game board drawing function
+bool connect_aws();
+void send_data_to_aws();                                            //Send data on the aws
+void start_config();                                                //Disconnects from AWS and turns of wifi, turns of BLE to start configuration
+void start_transfer();                                              //Starts wifi and connects to aws to start transfering data
+bool connect_wifi();
+void callback(char* topic, byte* message, unsigned int length);
 
 /*----------FUNKTIONS----------*/
-void creat_arr(){
-  int arr[SIZE][SIZE];
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      arr[i][j] = 0;
-      Serial.println(arr[i][j]);
-    }
-  }
-}
-
 void print_matrix(){
   int A[SIZE][SIZE];
   delay(1000);
@@ -63,7 +64,7 @@ void print_matrix(){
         display.setCursor(23+i*30,2+j*23);             
         display.println("X"); 
         display.display();
-      } 
+      }
     }
   }
 }
@@ -92,11 +93,8 @@ void first_menu(){
 void second_menu(){
   delay(1000);
   display.clearDisplay();                                 //Clear display
-//  display.drawLine(40, 0, 40, 63, WHITE);
-//  display.drawLine(80, 0, 80, 63, WHITE);
-//  display.drawLine(11, 21, 106, 21, WHITE);
-//  display.drawLine(11, 40, 106, 40, WHITE);
-print_matrix();
+
+  print_matrix();
   display.drawLine(15, 21, 95, 21, WHITE);
   display.drawLine(15, 43, 95, 43, WHITE);
   display.drawLine(42, 0, 42, 63, WHITE);
@@ -134,65 +132,6 @@ void get_won(){
   Serial.println("");
 }
 
-void input_data(){
-  char rx_byte, ry_byte;
-  if (Serial.available() > 0){                         //is a character available?
-    delay(1000);
-    display.clearDisplay();                            //Clear display
-    second_menu();
-    rx_byte = Serial.read();                             //get the character
-    ry_byte = Serial.read();
-    if ((rx_byte || ry_byte >= '0') && (rx_byte || ry_byte <= '9')) {        //check if a number was received
-      Serial.print("Number received: ");
-      Serial.print(rx_byte);
-      Serial.println(ry_byte);
-      display.setTextSize(2);             
-      display.setTextColor(WHITE);        
-      
-      if(rx_byte%2 == 0){
-        //display.setCursor(80,2);
-        //display.setCursor(80,25);
-        //display.setCursor(80,47);
-        //display.setCursor(23,2);
-        //display.setCursor(53,2);
-        //display.setCursor(23,25);
-        //display.setCursor(23,47);
-        //display.setCursor(53,25); 
-        display.setCursor(53,47);                
-        display.println("0"); 
-        display.display(); 
-      } else {
-        //display.setCursor(80,2);
-        //display.setCursor(80,25); 
-        //display.setCursor(80,47);
-        //display.setCursor(23,2);
-        //display.setCursor(53,2);
-        //display.setCursor(23,25);
-        //display.setCursor(23,47);
-        //display.setCursor(53,25); 
-        display.setCursor(53,47);                
-        display.println("X"); 
-        display.display(); 
-      }
-//      if(ry_byte%2 == 0){
-//        //display.setCursor(53,2);
-//        //display.setCursor(23,2);
-//        display.setCursor(80,2);             
-//        display.println("0"); 
-//        display.display(); 
-//      } else {
-//        //display.setCursor(53,2);
-//        //display.setCursor(23,2);
-//        display.setCursor(80,2);             
-//        display.println("X"); 
-//        display.display(); 
-//      }     
-    } else {
-      Serial.println("Not a number.");
-    }
-  }
-}
-
 void init_wire(){
   Wire.begin();
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -203,6 +142,84 @@ void init_wire(){
 
 void IRAM_ATTR isr() {
   conf_button_pressed = !conf_button_pressed;
+}
+bool setup_wifi(){
+  bool conf_status = false;
+  
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting to ");   // We start by connecting to a WiFi network
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    conf_status = false;
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  conf_status = true;
+  
+  return conf_status;
+}
+
+bool connect_aws(){
+  bool conf_status = false;
+  
+  while (!client.connected()){                          // Loop until we're reconnected
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect("ESP8266Client")) {              // Attempt to connect
+      Serial.println("connected");
+      client.subscribe("esp32/output");                 // Subscribe
+      conf_status = true;
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);                                      // Wait 5 seconds before retrying
+      conf_status = false;
+    }
+  }
+  return conf_status;
+}
+
+void callback(char* topic, byte* message, unsigned int length){
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  Serial.println();
+  // Feel free to add more if statements to control more GPIOs with MQTT
+  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
+  // Changes the output state according to the message
+  if (String(topic) == "esp32/output") {
+    Serial.print("Changing output to ");
+  }
+}
+
+void send_data_to_aws(){
+  
+}
+
+void start_transfer() {  
+  conf_button_pressed = false;
+  
+  if (!connect_wifi()) {
+    Serial.println("Failed connecting to wi-fi");
+  } else {
+    Serial.println("Succesfully connected to wi-fi");
+    if (!connect_aws()) {
+      Serial.println("Failed connecting to AWS");
+    } else {
+      Serial.println("Succesfully connected to AWS");
+    } 
+  }
+}
+
+void start_config() {
+  Serial.println("Start config mode");
+ 
 }
 
 #endif
