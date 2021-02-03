@@ -3,9 +3,11 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Wire.h>
+
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <Wire.h>
+#include <ArduinoJson.h>
 
 /*----------DEFINES----------*/
 #define PIN_RX  16                                        //Pin read 
@@ -35,11 +37,10 @@ void IRAM_ATTR isr();                                     //Button interuption f
 void second_menu();                                       //Game board drawing function
 void print_matrix();                                      //Array print function
 bool connect_aws();
-void send_data_to_aws();                                            //Send data on the aws
 void start_config();                                                //Disconnects from AWS and turns of wifi, turns of BLE to start configuration
-void start_transfer();                                              //Starts wifi and connects to aws to start transfering data
 bool connect_wifi();
 void callback(char* topic, byte* message, unsigned int length);
+void get_data_to_aws(String topic, byte* message, unsigned int length);
 
 /*----------FUNKTIONS----------*/
 void print_matrix(){
@@ -70,6 +71,7 @@ void print_matrix(){
 }
 
 void first_menu(){
+  connect_wifi();
   delay(1000);
   display.clearDisplay();                                 //Clear display
   display.setTextSize(1.5);             
@@ -143,23 +145,23 @@ void init_wire(){
 void IRAM_ATTR isr() {
   conf_button_pressed = !conf_button_pressed;
 }
-bool setup_wifi(){
+bool connect_wifi(){
   bool conf_status = false;
   
   delay(10);
   Serial.println();
-  Serial.print("Connecting to ");   // We start by connecting to a WiFi network
-  Serial.println(ssid);
+//  Serial.print("Connecting to ");   // We start by connecting to a WiFi network
+//  Serial.println(ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
     conf_status = false;
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+//  Serial.println("");
+//  Serial.println("WiFi connected");
+//  Serial.println("IP address: ");
+//  Serial.println(WiFi.localIP());
   conf_status = true;
   
   return conf_status;
@@ -169,10 +171,10 @@ bool connect_aws(){
   bool conf_status = false;
   
   while (!client.connected()){                          // Loop until we're reconnected
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP8266Client")) {              // Attempt to connect
-      Serial.println("connected");
-      client.subscribe("esp32/output");                 // Subscribe
+//    Serial.print("Attempting MQTT connection...");
+    if (client.connect("ESP32Client")) {              // Attempt to connect
+//      Serial.println("connected");
+      client.subscribe("/tic");                 // Subscribe
       conf_status = true;
     } else {
       Serial.print("failed, rc=");
@@ -186,40 +188,26 @@ bool connect_aws(){
 }
 
 void callback(char* topic, byte* message, unsigned int length){
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Message: ");
-  Serial.println();
-  // Feel free to add more if statements to control more GPIOs with MQTT
-  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
-  // Changes the output state according to the message
-  if (String(topic) == "esp32/output") {
-    Serial.print("Changing output to ");
-  }
+  get_data_to_aws(topic, message, length);
 }
 
-void send_data_to_aws(){
-  
-}
-
-void start_transfer() {  
-  conf_button_pressed = false;
-  
-  if (!connect_wifi()) {
-    Serial.println("Failed connecting to wi-fi");
-  } else {
-    Serial.println("Succesfully connected to wi-fi");
-    if (!connect_aws()) {
-      Serial.println("Failed connecting to AWS");
-    } else {
-      Serial.println("Succesfully connected to AWS");
-    } 
+void get_data_to_aws(String topic, byte* message, unsigned int length){
+  String messageTemp;
+  for (int i = 0; i < length; i++) {
+    messageTemp += (char)message[i];
   }
+  Serial.println(messageTemp);
+ 
+  StaticJsonDocument<1024> doc;
+  deserializeJson(doc, messageTemp);
+  Serial.print("\"{data:");
+
 }
 
 void start_config() {
   Serial.println("Start config mode");
- 
+  init_wire();
+  connect_wifi();
+  //first_menu();
 }
-
 #endif
