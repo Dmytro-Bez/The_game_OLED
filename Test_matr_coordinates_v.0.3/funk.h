@@ -113,9 +113,14 @@ void second_menu(){
 }
 
 void get_win(){
-//  if(){
-//    
-//  }
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+  //  if(){
+  //    
+  //  }
+    }
+  }
+
   get_print_win();
 }
 
@@ -171,7 +176,15 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
           display.println("X"); 
           display.display();
         }
+        
       }
+      for(int i = 0; i < SIZE; i++){
+          for(int j = 0; j < SIZE; j++){
+            if(array[j][i] == 1){
+              get_print_win();
+            }
+          }
+        }
     }
   }
 }
