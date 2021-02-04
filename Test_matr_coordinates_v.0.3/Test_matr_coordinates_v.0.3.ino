@@ -15,7 +15,6 @@ void setup() {
   mess_aws();
   
 }
-
 /*----------LOOP----------*/
 void loop() {
   if(!client.connected()){

@@ -159,34 +159,29 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
   for(JsonVariant v : array) {
     //Serial.println(v.as<int>());
   }
-  long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    display.clearDisplay();
-    display.setTextSize(2);             
-    display.setTextColor(WHITE);
-    for(int i = 0; i < SIZE; i++){
-      for(int j = 0; j < SIZE; j++){
-        if(array[j][i] == 0){
-          display.setCursor(23+i*30,2+j*23);             
-          display.println("0"); 
-          display.display();
-        } else if(array[j][i] == 1){
-          display.setCursor(23+i*30,2+j*23);             
-          display.println("X"); 
-          display.display();
-        }
-        
+  display.clearDisplay();
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      if(array[j][i] == 0){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("0"); 
+        display.display();
+      } else if(array[j][i] == 1){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("X"); 
+        display.display();
       }
-      for(int i = 0; i < SIZE; i++){
-          for(int j = 0; j < SIZE; j++){
-            if(array[j][i] == 1){
-              get_print_win();
-            }
-          }
-        }
     }
-  }
+  } 
+//  for(int i = 0; i < SIZE; i++){
+//    for(int j = 0; j < SIZE; j++){
+//      if(array[j][i] == 1){
+//        get_print_win();
+//      }
+//    }
+//  }
 }
 
 void IRAM_ATTR isr() {
