@@ -32,17 +32,157 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
 void first_menu();                                        //Input menu function
-void get_won();                                           //Winning function
+void get_print_win();                                     //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();                                       //Game board drawing function
 void print_matrix();                                      //Array print function
 bool connect_aws();
-void start_config();                                                //Disconnects from AWS and turns of wifi, turns of BLE to start configuration
+void start_config();                                            
 bool connect_wifi();
 void callback(char* topic, byte* message, unsigned int length);
 void get_data_to_aws(String topic, byte* message, unsigned int length);
+void mess_aws();
+void get_win();
 
 /*----------FUNKTIONS----------*/
+void start_config() {
+  Serial.println("Start config mode");
+  init_wire();
+  first_menu();
+  connect_wifi();
+}
+
+void first_menu(){
+  delay(1000);
+  display.clearDisplay();                                 //Clear display
+  display.setTextSize(1.5);             
+  display.setTextColor(WHITE);        
+  display.setCursor(0,0);             
+  display.println("Hello user.");
+  display.setCursor(0,15);   
+  display.println("GAME TicTacToe.");
+  display.setCursor(0,30); 
+  display.println("Please."); 
+  display.println("Pressed button!");
+  display.display();
+}
+
+bool connect_wifi(){
+  bool conf_status = false;
+  delay(10);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    conf_status = false;
+  }
+  //Serial.println("WiFi connected");
+  conf_status = true;
+  return conf_status;
+}
+
+bool connect_aws(){
+  bool conf_status = false;
+  while (!client.connected()){                        // Loop until we're reconnected
+    if (client.connect("ESP32Client")) {              // Attempt to connect
+      Serial.println("MQTT connected");
+      client.subscribe("/tic");                       // Subscribe
+      conf_status = true;
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);                                      // Wait 5 seconds before retrying
+      conf_status = false;
+    }
+  }
+  return conf_status;
+}
+
+void second_menu(){
+  delay(1000);
+  display.clearDisplay();                                 //Clear display
+  display.drawLine(15, 21, 95, 21, WHITE);
+  display.drawLine(15, 43, 95, 43, WHITE);
+  display.drawLine(42, 0, 42, 63, WHITE);
+  display.drawLine(71, 0, 71, 63, WHITE);
+  display.setCursor(22,15);
+  client.setCallback(callback);
+  display.display();
+}
+
+void get_win(){
+//  if(){
+//    
+//  }
+  get_print_win();
+}
+
+void get_print_win(){
+  display.clearDisplay();                                 //Clear display
+  display.setTextSize(1);             
+  display.setTextColor(WHITE);        
+  display.setCursor(0,0);             
+  display.print("User won: ");
+  display.print("X");
+  display.setCursor(0,15);   
+  display.println("Please.");
+  display.println("Click the button to");
+  display.print("start a new game!");
+  display.display();
+}
+
+void mess_aws(){
+  client.setServer(mqtt_server, 1883);
+}
+
+void callback(char* topic, byte* message, unsigned int length){
+  get_data_to_aws(topic, message, length);
+}
+
+void get_data_to_aws(String topic, byte* message, unsigned int length){
+  String messageTemp;
+  for (int i = 0; i < length; i++) {
+    messageTemp += (char)message[i];
+  }
+  //Serial.println(messageTemp);
+  StaticJsonDocument<1024> doc;
+  deserializeJson(doc, messageTemp);
+  const String one = doc["data"];
+  JsonArray array = doc["data"].as<JsonArray>();
+  for(JsonVariant v : array) {
+    //Serial.println(v.as<int>());
+  }
+  display.clearDisplay();
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      if(array[j][i] == 0){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("0"); 
+        display.display();
+      } else if(array[j][i] == 1){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("X"); 
+        display.display();
+      }
+    }
+  }
+}
+
+void IRAM_ATTR isr() {
+  conf_button_pressed = !conf_button_pressed;
+}
+
+void init_wire(){
+  Wire.begin();
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("SSD1306 allocation failed");
+    for(;;);
+  } 
+}
+
 void print_matrix(){
   int A[SIZE][SIZE];
   delay(1000);
@@ -52,7 +192,7 @@ void print_matrix(){
   randomSeed(9);
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
-      (A[i][j] = random(3));
+      (A[i][j] = random(2));
     }
   }
   for(int i = 0; i < SIZE; i++){
@@ -70,144 +210,4 @@ void print_matrix(){
   }
 }
 
-void first_menu(){
-  connect_wifi();
-  delay(1000);
-  display.clearDisplay();                                 //Clear display
-  display.setTextSize(1.5);             
-  display.setTextColor(WHITE);        
-  display.setCursor(0,0);             
-  display.println("Hello user.");
-  display.setCursor(0,15);   
-  display.println("GAME TicTacToe.");
-  display.setCursor(0,30); 
-  display.println("Please."); 
-  display.println("Pressed button!");
-  display.display();
-  
-  /*----------MENU SERIAL PORT----------*/
-  Serial.println("Hello user.");  
-  Serial.println("GAME TicTacToe.");
-  Serial.println("Please pressed button!"); 
-  Serial.println("");
-}
-
-void second_menu(){
-  delay(1000);
-  display.clearDisplay();                                 //Clear display
-
-  print_matrix();
-  display.drawLine(15, 21, 95, 21, WHITE);
-  display.drawLine(15, 43, 95, 43, WHITE);
-  display.drawLine(42, 0, 42, 63, WHITE);
-  display.drawLine(71, 0, 71, 63, WHITE);
-  display.setCursor(22,15);
-  display.display();
-  /*----------MENU SERIAL PORT----------*/
-  Serial.println("============="); 
-  Serial.println("-1-||-2-||-3-"); 
-  Serial.println("-4-||-5-||-6-"); 
-  Serial.println("-7-||-8-||-9-");
-  Serial.println("=============");  
-  Serial.println("");
-  display.display();
-}
-
-void get_won(){
-  display.clearDisplay();                                 //Clear display
-  display.setTextSize(1);             
-  display.setTextColor(WHITE);        
-  display.setCursor(0,0);             
-  display.print("User won: ");
-  display.print("X");
-  display.setCursor(0,15);   
-  display.println("Please.");
-  display.println("Click the button to");
-  display.print("start a new game!");
-  display.display();
-    
-  /*----------MENU SERIAL PORT----------*/
-  Serial.print("User won: ");  
-  Serial.println("X");
-  Serial.print("Please."); 
-  Serial.println("Click the button to start a new game!");
-  Serial.println("");
-}
-
-void init_wire(){
-  Wire.begin();
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    Serial.println("SSD1306 allocation failed");
-    for(;;);
-  } 
-}
-
-void IRAM_ATTR isr() {
-  conf_button_pressed = !conf_button_pressed;
-}
-bool connect_wifi(){
-  bool conf_status = false;
-  
-  delay(10);
-  Serial.println();
-//  Serial.print("Connecting to ");   // We start by connecting to a WiFi network
-//  Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    conf_status = false;
-  }
-//  Serial.println("");
-//  Serial.println("WiFi connected");
-//  Serial.println("IP address: ");
-//  Serial.println(WiFi.localIP());
-  conf_status = true;
-  
-  return conf_status;
-}
-
-bool connect_aws(){
-  bool conf_status = false;
-  
-  while (!client.connected()){                          // Loop until we're reconnected
-//    Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP32Client")) {              // Attempt to connect
-//      Serial.println("connected");
-      client.subscribe("/tic");                 // Subscribe
-      conf_status = true;
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);                                      // Wait 5 seconds before retrying
-      conf_status = false;
-    }
-  }
-  return conf_status;
-}
-
-void callback(char* topic, byte* message, unsigned int length){
-  get_data_to_aws(topic, message, length);
-}
-
-void get_data_to_aws(String topic, byte* message, unsigned int length){
-  String messageTemp;
-  for (int i = 0; i < length; i++) {
-    messageTemp += (char)message[i];
-  }
-  Serial.println(messageTemp);
- 
-  StaticJsonDocument<1024> doc;
-  deserializeJson(doc, messageTemp);
-  Serial.print("\"{data:");
-
-}
-
-void start_config() {
-  Serial.println("Start config mode");
-  init_wire();
-  connect_wifi();
-  //first_menu();
-}
 #endif

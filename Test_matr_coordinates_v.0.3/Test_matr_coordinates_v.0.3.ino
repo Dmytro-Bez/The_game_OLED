@@ -11,8 +11,9 @@ void setup() {
   attachInterrupt(BUTTON_PIN, isr, FALLING);
 
   start_config();
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
+
+  mess_aws();
+  
 }
 
 /*----------LOOP----------*/
@@ -21,11 +22,12 @@ void loop() {
     connect_aws();
   }
   
-//  conf_button_pressed = digitalRead(BUTTON_PIN);
-//  if((conf_button_pressed) &&(menu_flag==0)){
-//    second_menu();
-//  } else {
-//
-//  }
+  conf_button_pressed = digitalRead(BUTTON_PIN);
+  if((conf_button_pressed) &&(menu_flag==0)){
+    second_menu();
+//    print_matrix();
+  } else {
+
+  }
   client.loop();
 }
