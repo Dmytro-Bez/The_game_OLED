@@ -21,6 +21,7 @@ void loop() {
   if(!client.connected()){
     connect_aws();
   }
+  client.loop();
   
   conf_button_pressed = digitalRead(BUTTON_PIN);
   if((conf_button_pressed) &&(menu_flag==0)){
@@ -29,5 +30,4 @@ void loop() {
   } else {
 
   }
-  client.loop();
 }

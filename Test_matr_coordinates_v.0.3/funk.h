@@ -21,6 +21,7 @@
 #define DEVICE_NAME "TIC"                                 //The name of the device. This MUST match up with the name defined in the AWS console 
 
 /*----------VARIABLES----------*/
+long lastMsg = 0;
 bool conf_button_pressed = false;
 const char* ssid = "EE";
 const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
@@ -153,19 +154,23 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
   for(JsonVariant v : array) {
     //Serial.println(v.as<int>());
   }
-  display.clearDisplay();
-  display.setTextSize(2);             
-  display.setTextColor(WHITE);
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      if(array[j][i] == 0){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("0"); 
-        display.display();
-      } else if(array[j][i] == 1){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("X"); 
-        display.display();
+  long now = millis();
+  if (now - lastMsg > 2000) {
+    lastMsg = now;
+    display.clearDisplay();
+    display.setTextSize(2);             
+    display.setTextColor(WHITE);
+    for(int i = 0; i < SIZE; i++){
+      for(int j = 0; j < SIZE; j++){
+        if(array[j][i] == 0){
+          display.setCursor(23+i*30,2+j*23);             
+          display.println("0"); 
+          display.display();
+        } else if(array[j][i] == 1){
+          display.setCursor(23+i*30,2+j*23);             
+          display.println("X"); 
+          display.display();
+        }
       }
     }
   }
