@@ -13,7 +13,6 @@ void setup() {
   start_config();
 
   mess_aws();
-  
 }
 /*----------LOOP----------*/
 void loop() {
