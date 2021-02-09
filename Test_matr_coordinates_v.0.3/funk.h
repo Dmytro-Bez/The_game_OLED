@@ -22,12 +22,16 @@
 /*----------VARIABLES----------*/
 long lastMsg = 0;
 bool conf_button_pressed = false;
+bool O_win = false;
+bool X_win = false;
 const char* ssid = "EE";
 const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
 const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broker IP address, example const char* mqtt_server = "Х.Х.Х.Х"
 WiFiClient espClient;
 PubSubClient client(espClient);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+int Array[SIZE][SIZE] = {{1,1,0}, {1,0,1}, {0,1,0}};
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
@@ -36,13 +40,14 @@ void get_print_win();                                     //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();                                       //Game board drawing function
 void print_matrix();                                      //Array print function
-bool connect_aws();
-void start_config();                                            
-bool connect_wifi();
-void callback(char* topic, byte* message, unsigned int length);
-void get_data_to_aws(String topic, byte* message, unsigned int length);
-void mess_aws();
-void get_win();
+bool connect_aws();                                       //Function connect AWS
+void start_config();                                      //Settings function  
+bool connect_wifi();                                      //Function connect Wifi
+void callback(char* topic, byte* message, unsigned int length);               //Function callback
+void get_data_to_aws(String topic, byte* message, unsigned int length);       //Function get data to aws
+void mess_aws();                                          //Function mess AWS
+void get_win();                                           //Function get win
+void pr_win();
 
 /*----------FUNKTIONS----------*/
 void start_config() {
@@ -71,7 +76,7 @@ bool connect_wifi(){
   bool conf_status = false;
   delay(10);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED){     //Network connection check wifi
     delay(500);
     Serial.print(".");
     conf_status = false;
@@ -109,18 +114,83 @@ void second_menu(){
   display.setCursor(22,15);
   client.setCallback(callback);
   display.display();
+  pr_win();
 }
 
-void get_win(){
+void pr_win(){
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
-  //  if(){
-  //    
-  //  }
+      if(Array[j][i] == 0){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("0"); 
+        display.display();
+      } else if(Array[j][i] == 1){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("X");
+      }
     }
+    for(int i = 0; i < 3; i++){
+      if((Array[0,i] == Array[1,i]) && (Array[0,i] == Array[2,i])) {
+        if(Array[0,i] == 0){
+          O_win = true; 
+        } else{
+          X_win = true;
+        }
+        break;
+      }
+//      for(int j = 0; j < 3; j++){
+//        if((Array[j,0] == Array[j,1]) && (Array[j,0] == Array[j,2])) {
+//          if(Array[j,0] == 0){
+//            O_win = true; 
+//          } else {
+//            X_win = true;
+//          }
+//          break;
+//        }
+//      }
+    }
+//    if ((Array[0,0] == Array[1,1]) && (Array[1,1] == Array[2,2])) {
+//      if (Array[0,0] == 0){
+//        O_win = true; 
+//      } else{
+//        X_win = true;
+//      }
+//      break;
+//    }
+//    if((Array[0,2] == Array[1,1]) && (Array[1,1] == Array[2,0])) {
+//      if(Array[0,0] == 0){
+//        O_win = true; 
+//      } else {
+//        X_win = true;
+//      }
+//      break;
+//    } 
   }
-
-  get_print_win();
+  display.clearDisplay();
+  display.display();
+  
+  if(O_win){
+    display.clearDisplay();                                 //Clear display
+    display.setTextSize(1);             
+    display.setTextColor(WHITE);        
+    display.setCursor(0,0);             
+    display.print("User won: 0");
+    display.display();
+  } 
+  if(X_win){
+    display.clearDisplay();                                 //Clear display
+    display.setTextSize(1);             
+    display.setTextColor(WHITE);        
+    display.setCursor(0,0);             
+    display.print("User won: X");
+    display.display();
+  }
+  Serial.print("O_win = ");
+  Serial.println(O_win);
+  Serial.print("X_win = ");
+  Serial.println(X_win);
 }
 
 void get_print_win(){
@@ -154,33 +224,33 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
   StaticJsonDocument<1024> doc;
   deserializeJson(doc, messageTemp);
   const String one = doc["data"];
-  JsonArray array = doc["data"].as<JsonArray>();
-  for(JsonVariant v : array) {
+  JsonArray Array = doc["data"].as<JsonArray>();
+  for(JsonVariant v : Array) {
     //Serial.println(v.as<int>());
   }
+  
   display.clearDisplay();
   display.setTextSize(2);             
   display.setTextColor(WHITE);
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
-      if(array[j][i] == 0){
+      if(Array[j][i] == 0){
         display.setCursor(23+i*30,2+j*23);             
         display.println("0"); 
         display.display();
-      } else if(array[j][i] == 1){
+      } else if(Array[j][i] == 1){
         display.setCursor(23+i*30,2+j*23);             
         display.println("X"); 
         display.display();
       }
     }
   } 
-//  for(int i = 0; i < SIZE; i++){
-//    for(int j = 0; j < SIZE; j++){
-//      if(array[j][i] == 1){
-//        get_print_win();
-//      }
-//    }
-//  }
+  for (int j = 0; j < 3; j++){
+    if ((Array[1,j] == Array[2,j]) && (Array[2,j] == Array[3,j])) {
+      if (Array[1,j] == 0) O_win = true; 
+      else X_win = true;
+      }
+  }
 }
 
 void IRAM_ATTR isr() {
@@ -210,15 +280,23 @@ void print_matrix(){
   for(int i = 0; i < SIZE; i++){
     for(int j = 0; j < SIZE; j++){
       if(A[i][j] == 0){
+        display.clearDisplay();
         display.setCursor(23+i*30,2+j*23);             
         display.println("0"); 
         display.display();
       } else if(A[i][j] == 1){
+        display.clearDisplay();
         display.setCursor(23+i*30,2+j*23);             
         display.println("X"); 
         display.display();
       }
     }
+  }
+  for (int j = 0; j < 3; j++){
+    if ((Array[1,j] == Array[2,j]) && (Array[2,j] == Array[3,j])) {
+      if (Array[1,j] == 0) O_win = true; 
+        else X_win = true;
+      }
   }
 }
 
