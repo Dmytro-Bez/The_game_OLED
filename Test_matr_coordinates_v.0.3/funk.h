@@ -114,21 +114,8 @@ void second_menu(){
   display.setCursor(22,15);
   client.setCallback(callback);
   display.display();
+  
 //  pr_win();
-}
-
-void get_print_win(){
-  display.clearDisplay();                                 //Clear display
-  display.setTextSize(1);             
-  display.setTextColor(WHITE);        
-  display.setCursor(0,0);             
-  display.print("User won: ");
-  display.print("X");
-  display.setCursor(0,15);   
-  display.println("Please.");
-  display.println("Click the button to");
-  display.print("start a new game!");
-  display.display();
 }
 
 void mess_aws(){
@@ -136,7 +123,8 @@ void mess_aws(){
 }
 
 void callback(char* topic, byte* message, unsigned int length){
-  get_data_to_aws(topic, message, length);
+  if ((X_win==false)&&(O_win==false)) get_data_to_aws(topic, message, length);
+//  get_data_to_aws(topic, message, length);
 }
 
 void get_data_to_aws(String topic, byte* message, unsigned int length){
@@ -221,97 +209,97 @@ void init_wire(){
   } 
 }
 
-void print_matrix(){
-  int A[SIZE][SIZE];
-  delay(1000);
-  display.clearDisplay();
-  display.setTextSize(2);             
-  display.setTextColor(WHITE);
-  randomSeed(9);
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      (A[i][j] = random(2));
-    }
-  }
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      if(A[i][j] == 0){
-        display.clearDisplay();
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("0"); 
-        display.display();
-      } else if(A[i][j] == 1){
-        display.clearDisplay();
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("X"); 
-        display.display();
-      }
-    }
-  }
-  for (int j = 0; j < 3; j++){
-    if ((Array[1,j] == Array[2,j]) && (Array[2,j] == Array[3,j])) {
-      if (Array[1,j] == 0) O_win = true; 
-        else X_win = true;
-      }
-  }
-}
-
-void pr_win(){
-  display.setTextSize(2);             
-  display.setTextColor(WHITE);
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      if(Array[j][i] == 0){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("0"); 
-        display.display();
-      } else if(Array[j][i] == 1){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("X");
-      }
-    }
-    for(int i = 0; i < 3; i++){
-      if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
-        if(Array[0][i] == 0) O_win = true; 
-        else if(Array[0][i] == 1) X_win = true;
-      }
-      for(int j = 0; j < 3; j++){
-        if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
-          if(Array[j][0] == 0) O_win = true; 
-          else if(Array[j][0] == 1) X_win = true;
-        }
-      }
-    }
-    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
-      if (Array[0][0] == 0) O_win = true; 
-      else if (Array[0][0] == 1) X_win = true;
-    }
-    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
-      if(Array[0][2] == 0) O_win = true; 
-      else if (Array[0][2] == 1) X_win = true;
-    } 
-  }
-  display.clearDisplay();
-  display.display();
-  
-  if(O_win){
-    display.clearDisplay();                                 //Clear display
-    display.setTextSize(1);             
-    display.setTextColor(WHITE);        
-    display.setCursor(0,0);             
-    display.print("User won: 0");
-    display.display();
-  } else {
-    display.clearDisplay();                                 //Clear display
-    display.setTextSize(1);             
-    display.setTextColor(WHITE);        
-    display.setCursor(0,0);             
-    display.print("User won: X");
-    display.display();
-  }
-  Serial.print("O_win = ");
-  Serial.println(O_win);
-  Serial.print("X_win = ");
-  Serial.println(X_win);
-}
+//void print_matrix(){
+//  int A[SIZE][SIZE];
+//  delay(1000);
+//  display.clearDisplay();
+//  display.setTextSize(2);             
+//  display.setTextColor(WHITE);
+//  randomSeed(9);
+//  for(int i = 0; i < SIZE; i++){
+//    for(int j = 0; j < SIZE; j++){
+//      (A[i][j] = random(2));
+//    }
+//  }
+//  for(int i = 0; i < SIZE; i++){
+//    for(int j = 0; j < SIZE; j++){
+//      if(A[i][j] == 0){
+//        display.clearDisplay();
+//        display.setCursor(23+i*30,2+j*23);             
+//        display.println("0"); 
+//        display.display();
+//      } else if(A[i][j] == 1){
+//        display.clearDisplay();
+//        display.setCursor(23+i*30,2+j*23);             
+//        display.println("X"); 
+//        display.display();
+//      }
+//    }
+//  }
+//  for (int j = 0; j < 3; j++){
+//    if ((Array[1,j] == Array[2,j]) && (Array[2,j] == Array[3,j])) {
+//      if (Array[1,j] == 0) O_win = true; 
+//        else X_win = true;
+//      }
+//  }
+//}
+//
+//void pr_win(){
+//  display.setTextSize(2);             
+//  display.setTextColor(WHITE);
+//  for(int i = 0; i < SIZE; i++){
+//    for(int j = 0; j < SIZE; j++){
+//      if(Array[j][i] == 0){
+//        display.setCursor(23+i*30,2+j*23);             
+//        display.println("0"); 
+//        display.display();
+//      } else if(Array[j][i] == 1){
+//        display.setCursor(23+i*30,2+j*23);             
+//        display.println("X");
+//      }
+//    }
+//    for(int i = 0; i < 3; i++){
+//      if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
+//        if(Array[0][i] == 0) O_win = true; 
+//        else if(Array[0][i] == 1) X_win = true;
+//      }
+//      for(int j = 0; j < 3; j++){
+//        if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
+//          if(Array[j][0] == 0) O_win = true; 
+//          else if(Array[j][0] == 1) X_win = true;
+//        }
+//      }
+//    }
+//    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
+//      if (Array[0][0] == 0) O_win = true; 
+//      else if (Array[0][0] == 1) X_win = true;
+//    }
+//    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
+//      if(Array[0][2] == 0) O_win = true; 
+//      else if (Array[0][2] == 1) X_win = true;
+//    } 
+//  }
+//  display.clearDisplay();
+//  display.display();
+//  
+//  if(O_win){
+//    display.clearDisplay();                                 //Clear display
+//    display.setTextSize(1);             
+//    display.setTextColor(WHITE);        
+//    display.setCursor(0,0);             
+//    display.print("User won: 0");
+//    display.display();
+//  } else {
+//    display.clearDisplay();                                 //Clear display
+//    display.setTextSize(1);             
+//    display.setTextColor(WHITE);        
+//    display.setCursor(0,0);             
+//    display.print("User won: X");
+//    display.display();
+//  }
+//  Serial.print("O_win = ");
+//  Serial.println(O_win);
+//  Serial.print("X_win = ");
+//  Serial.println(X_win);
+//}
 #endif

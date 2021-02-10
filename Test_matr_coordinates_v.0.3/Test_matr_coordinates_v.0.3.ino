@@ -3,6 +3,9 @@
 /*----------DEFINES----------*/
 /*----------VARIABLES----------*/
 int menu_flag = 0;
+unsigned long currentMillis = 0;
+unsigned long previousMillis = 0;
+const long interval = 1000;
 /*----------PROTOTYPE FUNCTIONS----------*/
 /*----------SETUP----------*/
 void setup() {
@@ -20,15 +23,17 @@ void setup() {
 }
 /*----------LOOP----------*/
 void loop() {
-    if(!client.connected()){
+  if(!client.connected()){
     connect_aws();
   }
   client.loop();
-  
-  conf_button_pressed = digitalRead(BUTTON_PIN);          //In the loop, read whether the button is pressed
-  if((conf_button_pressed) &&(menu_flag==0)){
-    second_menu();
-  } else {
-    
+
+  currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    conf_button_pressed = digitalRead(BUTTON_PIN);          //In the loop, read whether the button is pressed
+    if((conf_button_pressed) &&(menu_flag==0)){
+      second_menu();
+    } 
   }
 }
