@@ -16,14 +16,14 @@ void setup() {
   Serial.print("X_win = ");
   Serial.println(X_win);
 
-  //mess_aws();                                         //Start connect AWS
+  mess_aws();                                         //Start connect AWS
 }
 /*----------LOOP----------*/
 void loop() {
-  //  if(!client.connected()){
-//    connect_aws();
-//  }
-//  client.loop();
+    if(!client.connected()){
+    connect_aws();
+  }
+  client.loop();
   
   conf_button_pressed = digitalRead(BUTTON_PIN);          //In the loop, read whether the button is pressed
   if((conf_button_pressed) &&(menu_flag==0)){
