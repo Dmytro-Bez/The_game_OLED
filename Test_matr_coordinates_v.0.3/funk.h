@@ -92,25 +92,6 @@ void second_menu(){
   //pr_win();
 }
 
-void pr_win(){
-  display.setTextSize(2);             
-  display.setTextColor(WHITE);
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
-      if(Array[j][i] == 0){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("0"); 
-        display.display();
-      } else if(Array[j][i] == 1){
-        display.setCursor(23+i*30,2+j*23);             
-        display.println("X");
-        display.display();
-      }
-    }
-  }
-}
-
-
 bool matrix_check(){
   bool status_arr = false;
   
@@ -268,44 +249,11 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
       }
     }
   } 
-  for(int i = 0; i < 3; i++){
-    if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
-      if(Array[0][i] == 0) O_win = true; 
-      else if(Array[0][i] == 1) X_win = true;
-    }
-    for(int j = 0; j < 3; j++){
-      if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
-        if(Array[j][0] == 0) O_win = true; 
-        else if(Array[j][0] == 1) X_win = true;
-      }
-    }
-    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
-      if (Array[0][0] == 0) O_win = true; 
-      else if (Array[0][0] == 1) X_win = true;
-    }
-    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
-      if(Array[0][2] == 0) O_win = true; 
-      else if (Array[0][2] == 1) X_win = true;
-    } 
-  }
+  matrix_check();
   display.clearDisplay();
   display.display();
   
-  if(O_win){
-    display.clearDisplay();                                 //Clear display
-    display.setTextSize(1);             
-    display.setTextColor(WHITE);        
-    display.setCursor(0,0);             
-    display.print("User won: 0");
-    display.display();
-  } else {
-    display.clearDisplay();                                 //Clear display
-    display.setTextSize(1);             
-    display.setTextColor(WHITE);        
-    display.setCursor(0,0);             
-    display.print("User won: X");
-    display.display();
-  }
+  move_win();
 }
 
 void IRAM_ATTR isr() {
@@ -320,4 +268,21 @@ void init_wire(){
   } 
 }
 
+void pr_win(){
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      if(Array[j][i] == 0){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("0"); 
+        display.display();
+      } else if(Array[j][i] == 1){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("X");
+        display.display();
+      }
+    }
+  }
+}
 #endif
