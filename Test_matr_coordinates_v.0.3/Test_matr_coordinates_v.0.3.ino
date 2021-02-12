@@ -1,12 +1,11 @@
 /*----------LIBRARIES----------*/
 #include "funk.h"
-/*----------DEFINES----------*/
+
 /*----------VARIABLES----------*/
-int menu_flag = 0;
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
-const long interval = 1000;
-/*----------PROTOTYPE FUNCTIONS----------*/
+const long interval = 500;
+
 /*----------SETUP----------*/
 void setup() {
   Serial.begin(115200);
@@ -14,15 +13,10 @@ void setup() {
   attachInterrupt(BUTTON_PIN, isr, FALLING);              //Interrupt button
 
   start_config();                                         //Start and init system
-  Serial.print("O_win = ");
-  Serial.println(O_win);
-  Serial.print("X_win = ");
-  Serial.println(X_win);
-
-  mess_aws();                                         //Start connect AWS
 }
 /*----------LOOP----------*/
 void loop() {
+  
   if(!client.connected()){
     connect_aws();
   }
@@ -32,8 +26,14 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
     conf_button_pressed = digitalRead(BUTTON_PIN);          //In the loop, read whether the button is pressed
-    if((conf_button_pressed) &&(menu_flag==0)){
-      second_menu();
-    } 
-  }
+    if((conf_button_pressed)){
+      first_menu();
+    } else {
+      if(matrix_check()){
+        move_win();
+      } else {
+        return_game();
+      }
+    }
+ }
 }

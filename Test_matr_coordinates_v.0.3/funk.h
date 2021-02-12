@@ -20,6 +20,7 @@
 #define DEVICE_NAME "TIC"                                 //The name of the device. This MUST match up with the name defined in the AWS console 
 
 /*----------VARIABLES----------*/
+bool menu_flag = false;
 long lastMsg = 0;
 bool conf_button_pressed = false;
 bool O_win = false;
@@ -31,7 +32,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int Array[SIZE][SIZE] = {{0,1,1}, {1,1,0}, {1,1,0}};
+int Array[SIZE][SIZE] = {{0,1,0}, {1,1,0}, {1,1,0}};
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
@@ -43,11 +44,16 @@ void print_matrix();                                      //Array print function
 bool connect_aws();                                       //Function connect AWS
 void start_config();                                      //Settings function  
 bool connect_wifi();                                      //Function connect Wifi
+void disconnect_wifi();                                   //Disconnect network
 void callback(char* topic, byte* message, unsigned int length);               //Function callback
 void get_data_to_aws(String topic, byte* message, unsigned int length);       //Function get data to aws
 void mess_aws();                                          //Function mess AWS
 void get_win();                                           //Function get win
 void pr_win();
+void final_game();
+void print_final();
+void move_win();
+void return_game();
 
 /*----------FUNKTIONS----------*/
 void start_config() {
@@ -55,6 +61,7 @@ void start_config() {
   init_wire();
   first_menu();
   connect_wifi();
+  mess_aws();                                             //Start connect AWS
 }
 
 void first_menu(){
@@ -66,10 +73,115 @@ void first_menu(){
   display.println("Hello user.");
   display.setCursor(0,15);   
   display.println("GAME TicTacToe.");
-  display.setCursor(0,30); 
-  display.println("Please."); 
-  display.println("Pressed button!");
   display.display();
+  delay(5000);
+  second_menu();
+}
+
+void second_menu(){
+  delay(1000);
+  display.clearDisplay();                                 //Clear display
+  display.drawLine(15, 21, 95, 21, WHITE);
+  display.drawLine(15, 43, 95, 43, WHITE);
+  display.drawLine(42, 0, 42, 63, WHITE);
+  display.drawLine(71, 0, 71, 63, WHITE);
+  display.setCursor(22,15);
+  client.setCallback(callback);
+  display.display();
+  
+  pr_win();
+}
+
+void pr_win(){
+  display.setTextSize(2);             
+  display.setTextColor(WHITE);
+  for(int i = 0; i < SIZE; i++){
+    for(int j = 0; j < SIZE; j++){
+      if(Array[j][i] == 0){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("0"); 
+        display.display();
+      } else if(Array[j][i] == 1){
+        display.setCursor(23+i*30,2+j*23);             
+        display.println("X");
+        display.display();
+      }
+    }
+  }
+}
+
+
+bool matrix_check(){
+  bool status_arr = false;
+  
+  for(int i = 0; i < 3; i++){
+    if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
+      if(Array[0][i] == 0){
+        O_win = true;
+        status_arr = true;
+      }
+        else if(Array[0][i] == 1){
+          X_win = true;
+          status_arr = true;
+        }
+    }
+    for(int j = 0; j < 3; j++){
+      if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
+        if(Array[j][0] == 0){
+          O_win = true;
+          status_arr = true; 
+        }
+          else if(Array[j][0] == 1){
+            X_win = true;
+            status_arr = true;
+          }
+        }
+      }
+    }
+    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
+      if (Array[0][0] == 0){
+        O_win = true;
+        status_arr = true; 
+      }
+      else if (Array[0][0] == 1){
+        X_win = true;
+        status_arr = true;
+      }
+    }
+    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
+      if(Array[0][2] == 0){
+        O_win = true;
+        status_arr = true; 
+      }
+      else if (Array[0][2] == 1){
+        X_win = true;
+      }
+    }
+    return status_arr; 
+}
+
+void move_win(){
+  if(O_win){
+    display.clearDisplay();                                 //Clear display
+    display.setTextSize(1);             
+    display.setTextColor(WHITE);        
+    display.setCursor(0,0);             
+    display.print("User won: 0");
+    display.setCursor(0,30); 
+    display.println("Please."); 
+    display.println("Pressed button!");
+    display.display();
+  } else {
+    display.clearDisplay();                                 //Clear display
+    display.setTextSize(1);             
+    display.setTextColor(WHITE);        
+    display.setCursor(0,0);             
+    display.print("User won: X");
+    display.setCursor(0,30); 
+    display.println("Please."); 
+    display.println("Pressed button!");
+    display.display();
+  }
 }
 
 bool connect_wifi(){
@@ -90,7 +202,7 @@ bool connect_aws(){
   bool conf_status = false;
   while (!client.connected()){                        // Loop until we're reconnected
     if (client.connect("ESP32Client")) {              // Attempt to connect
-      Serial.println("MQTT connected");
+      //Serial.println("MQTT connected");
       client.subscribe("/tic");                       // Subscribe
       conf_status = true;
     } else {
@@ -102,20 +214,6 @@ bool connect_aws(){
     }
   }
   return conf_status;
-}
-
-void second_menu(){
-  delay(1000);
-  display.clearDisplay();                                 //Clear display
-  display.drawLine(15, 21, 95, 21, WHITE);
-  display.drawLine(15, 43, 95, 43, WHITE);
-  display.drawLine(42, 0, 42, 63, WHITE);
-  display.drawLine(71, 0, 71, 63, WHITE);
-  display.setCursor(22,15);
-  client.setCallback(callback);
-  display.display();
-  
-//  pr_win();
 }
 
 void mess_aws(){
@@ -197,6 +295,18 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
   }
 }
 
+void return_game(){
+  display.clearDisplay();                                 //Clear display
+  display.setTextSize(1);             
+  display.setTextColor(WHITE);        
+  display.setCursor(0,0);             
+  display.print("You have not entered all the cells.");
+  display.setCursor(0,30); 
+  display.println("Please.");
+  display.println("Click the button and start a new game."); 
+  display.display();
+}
+
 void IRAM_ATTR isr() {
   conf_button_pressed = !conf_button_pressed;
 }
@@ -209,97 +319,4 @@ void init_wire(){
   } 
 }
 
-//void print_matrix(){
-//  int A[SIZE][SIZE];
-//  delay(1000);
-//  display.clearDisplay();
-//  display.setTextSize(2);             
-//  display.setTextColor(WHITE);
-//  randomSeed(9);
-//  for(int i = 0; i < SIZE; i++){
-//    for(int j = 0; j < SIZE; j++){
-//      (A[i][j] = random(2));
-//    }
-//  }
-//  for(int i = 0; i < SIZE; i++){
-//    for(int j = 0; j < SIZE; j++){
-//      if(A[i][j] == 0){
-//        display.clearDisplay();
-//        display.setCursor(23+i*30,2+j*23);             
-//        display.println("0"); 
-//        display.display();
-//      } else if(A[i][j] == 1){
-//        display.clearDisplay();
-//        display.setCursor(23+i*30,2+j*23);             
-//        display.println("X"); 
-//        display.display();
-//      }
-//    }
-//  }
-//  for (int j = 0; j < 3; j++){
-//    if ((Array[1,j] == Array[2,j]) && (Array[2,j] == Array[3,j])) {
-//      if (Array[1,j] == 0) O_win = true; 
-//        else X_win = true;
-//      }
-//  }
-//}
-//
-//void pr_win(){
-//  display.setTextSize(2);             
-//  display.setTextColor(WHITE);
-//  for(int i = 0; i < SIZE; i++){
-//    for(int j = 0; j < SIZE; j++){
-//      if(Array[j][i] == 0){
-//        display.setCursor(23+i*30,2+j*23);             
-//        display.println("0"); 
-//        display.display();
-//      } else if(Array[j][i] == 1){
-//        display.setCursor(23+i*30,2+j*23);             
-//        display.println("X");
-//      }
-//    }
-//    for(int i = 0; i < 3; i++){
-//      if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
-//        if(Array[0][i] == 0) O_win = true; 
-//        else if(Array[0][i] == 1) X_win = true;
-//      }
-//      for(int j = 0; j < 3; j++){
-//        if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
-//          if(Array[j][0] == 0) O_win = true; 
-//          else if(Array[j][0] == 1) X_win = true;
-//        }
-//      }
-//    }
-//    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
-//      if (Array[0][0] == 0) O_win = true; 
-//      else if (Array[0][0] == 1) X_win = true;
-//    }
-//    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
-//      if(Array[0][2] == 0) O_win = true; 
-//      else if (Array[0][2] == 1) X_win = true;
-//    } 
-//  }
-//  display.clearDisplay();
-//  display.display();
-//  
-//  if(O_win){
-//    display.clearDisplay();                                 //Clear display
-//    display.setTextSize(1);             
-//    display.setTextColor(WHITE);        
-//    display.setCursor(0,0);             
-//    display.print("User won: 0");
-//    display.display();
-//  } else {
-//    display.clearDisplay();                                 //Clear display
-//    display.setTextSize(1);             
-//    display.setTextColor(WHITE);        
-//    display.setCursor(0,0);             
-//    display.print("User won: X");
-//    display.display();
-//  }
-//  Serial.print("O_win = ");
-//  Serial.println(O_win);
-//  Serial.print("X_win = ");
-//  Serial.println(X_win);
-//}
 #endif
