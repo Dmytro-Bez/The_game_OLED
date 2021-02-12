@@ -32,7 +32,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int Array[SIZE][SIZE] = {{0,1,0}, {1,1,0}, {1,1,0}};
+int Array[SIZE][SIZE] = {{0,0,3}, {0,1,1}, {1,1,0}};
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
@@ -89,7 +89,7 @@ void second_menu(){
   client.setCallback(callback);
   display.display();
   
-  pr_win();
+  //pr_win();
 }
 
 void pr_win(){
@@ -157,6 +157,7 @@ bool matrix_check(){
         X_win = true;
       }
     }
+    //Serial.print(status_arr);
     return status_arr; 
 }
 
@@ -184,13 +185,25 @@ void move_win(){
   }
 }
 
+void return_game(){
+  display.clearDisplay();                                 //Clear display
+  display.setTextSize(1);             
+  display.setTextColor(WHITE);        
+  display.setCursor(0,0);             
+  display.print("You have not entered all the cells of the matrix or completely filled.");
+  display.setCursor(0,40); 
+  display.println("Please.");
+  display.println("Click the button and start a new game."); 
+  display.display();
+}
+
 bool connect_wifi(){
   bool conf_status = false;
   delay(10);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED){     //Network connection check wifi
     delay(500);
-    Serial.print(".");
+    //Serial.print(".");
     conf_status = false;
   }
   //Serial.println("WiFi connected");
@@ -293,18 +306,6 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
     display.print("User won: X");
     display.display();
   }
-}
-
-void return_game(){
-  display.clearDisplay();                                 //Clear display
-  display.setTextSize(1);             
-  display.setTextColor(WHITE);        
-  display.setCursor(0,0);             
-  display.print("You have not entered all the cells.");
-  display.setCursor(0,30); 
-  display.println("Please.");
-  display.println("Click the button and start a new game."); 
-  display.display();
 }
 
 void IRAM_ATTR isr() {
