@@ -1,18 +1,18 @@
 #ifndef funk_h
 #define funk_h
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <Wire.h>
-#include <ArduinoJson.h>
+#include <Adafruit_GFX.h>                                 //Connect lib. full oled  
+#include <Adafruit_SSD1306.h>                             //Connect lib. SSD1306
+#include <WiFi.h>                                         //Connect lib.work wifi
+#include <PubSubClient.h>                                 //Connect work mqtt 
+#include <Wire.h>                                         //Connect lib.work I2c bus
+#include <ArduinoJson.h>                                  //Connect lib.work json
 
 /*----------DEFINES----------*/
 #define PIN_RX  16                                        //Pin read 
 #define PIN_TX  17                                        //Pin text
-#define SCREEN_WIDTH 128                                  // OLED display width, in pixels
-#define SCREEN_HEIGHT 64                                  // OLED display height, in pixels
+#define SCREEN_WIDTH 128                                  //OLED display width, in pixels
+#define SCREEN_HEIGHT 64                                  //OLED display height, in pixels
 #define BUTTON_PIN 4                                      //button
 #define SIZE 3                                            //size arr
 #define NX 'X'                                            //X
@@ -20,19 +20,16 @@
 #define DEVICE_NAME "TIC"                                 //The name of the device. This MUST match up with the name defined in the AWS console 
 
 /*----------VARIABLES----------*/
-bool menu_flag = false;
-long lastMsg = 0;
-bool conf_button_pressed = false;
-bool O_win = false;
-bool X_win = false;
-const char* ssid = "EE";
+bool conf_button_pressed = false;                         //Variable to work button
+bool O_win = false;                                       //Variable win '0'
+bool X_win = false;                                       //Variable win 'X'
+const char* ssid = "EE";                                  //Variable network
 const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
 const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broker IP address, example const char* mqtt_server = "Х.Х.Х.Х"
-WiFiClient espClient;
-PubSubClient client(espClient);
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-
-int Array[SIZE][SIZE] = {{0,0,3}, {0,1,1}, {1,1,0}};
+WiFiClient espClient;                                     //Create client wifi
+PubSubClient client(espClient);                           //Create client messege mqtt
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);             //Create object display
+int Array[SIZE][SIZE] = {{0,0,3}, {0,1,1}, {1,1,0}};      //Create test array
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
@@ -49,22 +46,23 @@ void callback(char* topic, byte* message, unsigned int length);               //
 void get_data_to_aws(String topic, byte* message, unsigned int length);       //Function get data to aws
 void mess_aws();                                          //Function mess AWS
 void get_win();                                           //Function get win
-void pr_win();
-void final_game();
-void print_final();
-void move_win();
-void return_game();
+void pr_win();                                            //Function print win
+void final_game();                                        //Function final game
+void print_final();                                       //Function print final
+void move_win();                                          //Function move win
+void return_game();                                       //Function return game
+bool matrix_check();                                      //Function matrix check
 
 /*----------FUNKTIONS----------*/
 void start_config() {
-  Serial.println("Start config mode");
-  init_wire();
-  first_menu();
-  connect_wifi();
+  Serial.println("Start config mode");                    //Add function setting 
+  init_wire();                                            //Initialization I2C
+  first_menu();                                           //Input menu function
+  connect_wifi();                                         //Function connect Wifi
   mess_aws();                                             //Start connect AWS
 }
 
-void first_menu(){
+void first_menu(){                                        //Create input menu function
   delay(1000);
   display.clearDisplay();                                 //Clear display
   display.setTextSize(1.5);             
@@ -75,27 +73,27 @@ void first_menu(){
   display.println("GAME TicTacToe.");
   display.display();
   delay(5000);
-  second_menu();
+  second_menu();                                          //Game board drawing function
 }
 
-void second_menu(){
+void second_menu(){                                       //Create game board drawing function
   delay(1000);
   display.clearDisplay();                                 //Clear display
-  display.drawLine(15, 21, 95, 21, WHITE);
+  display.drawLine(15, 21, 95, 21, WHITE);                //Create line matrix
   display.drawLine(15, 43, 95, 43, WHITE);
   display.drawLine(42, 0, 42, 63, WHITE);
   display.drawLine(71, 0, 71, 63, WHITE);
   display.setCursor(22,15);
-  client.setCallback(callback);
+  client.setCallback(callback);                           //Connect and set callback
   display.display();
   
-  //pr_win();
+  //pr_win();                                           //Testing win
 }
 
-bool matrix_check(){
+bool matrix_check(){                                      //Create function matrix check
   bool status_arr = false;
   
-  for(int i = 0; i < 3; i++){
+  for(int i = 0; i < 3; i++){                             //Check the horizontals of the diagonals
     if((Array[0][i] == Array[1][i]) && (Array[0][i] == Array[2][i])) {
       if(Array[0][i] == 0){
         O_win = true;
@@ -106,7 +104,7 @@ bool matrix_check(){
           status_arr = true;
         }
     }
-    for(int j = 0; j < 3; j++){
+    for(int j = 0; j < 3; j++){                           //Check the verticals of the diagonal
       if((Array[j][0] == Array[j][1]) && (Array[j][0] == Array[j][2])) {
         if(Array[j][0] == 0){
           O_win = true;
@@ -119,7 +117,7 @@ bool matrix_check(){
         }
       }
     }
-    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {
+    if ((Array[0][0] == Array[1][1]) && (Array[1][1] == Array[2][2])) {   //Check the winning diagonals
       if (Array[0][0] == 0){
         O_win = true;
         status_arr = true; 
@@ -129,7 +127,7 @@ bool matrix_check(){
         status_arr = true;
       }
     }
-    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {
+    if((Array[0][2] == Array[1][1]) && (Array[1][1] == Array[2][0])) {    //Check the winning diagonals
       if(Array[0][2] == 0){
         O_win = true;
         status_arr = true; 
@@ -142,7 +140,7 @@ bool matrix_check(){
     return status_arr; 
 }
 
-void move_win(){
+void move_win(){                                            //Create function move win
   if(O_win){
     display.clearDisplay();                                 //Clear display
     display.setTextSize(1);             
@@ -166,7 +164,7 @@ void move_win(){
   }
 }
 
-void return_game(){
+void return_game(){                                       //Create function return game
   display.clearDisplay();                                 //Clear display
   display.setTextSize(1);             
   display.setTextColor(WHITE);        
@@ -178,11 +176,11 @@ void return_game(){
   display.display();
 }
 
-bool connect_wifi(){
+bool connect_wifi(){                                     //Create function connect wifi
   bool conf_status = false;
   delay(10);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED){     //Network connection check wifi
+  while (WiFi.status() != WL_CONNECTED){                 //Network connection check wifi
     delay(500);
     //Serial.print(".");
     conf_status = false;
@@ -192,12 +190,12 @@ bool connect_wifi(){
   return conf_status;
 }
 
-bool connect_aws(){
+bool connect_aws(){                                     //Create function connect aws
   bool conf_status = false;
-  while (!client.connected()){                        // Loop until we're reconnected
-    if (client.connect("ESP32Client")) {              // Attempt to connect
+  while (!client.connected()){                          // Loop until we're reconnected
+    if (client.connect("ESP32Client")) {                // Attempt to connect
       //Serial.println("MQTT connected");
-      client.subscribe("/tic");                       // Subscribe
+      client.subscribe("/tic");                         // Subscribe
       conf_status = true;
     } else {
       Serial.print("failed, rc=");
@@ -210,22 +208,22 @@ bool connect_aws(){
   return conf_status;
 }
 
-void mess_aws(){
-  client.setServer(mqtt_server, 1883);
+void mess_aws(){                                        //Create function mess aws
+  client.setServer(mqtt_server, 1883);                  //Connect port and server
 }
 
-void callback(char* topic, byte* message, unsigned int length){
+void callback(char* topic, byte* message, unsigned int length){                 //Create function callback
   if ((X_win==false)&&(O_win==false)) get_data_to_aws(topic, message, length);
 //  get_data_to_aws(topic, message, length);
 }
 
-void get_data_to_aws(String topic, byte* message, unsigned int length){
+void get_data_to_aws(String topic, byte* message, unsigned int length){         //Create function get data to aws
   String messageTemp;
   for (int i = 0; i < length; i++) {
     messageTemp += (char)message[i];
   }
   //Serial.println(messageTemp);
-  StaticJsonDocument<1024> doc;
+  StaticJsonDocument<1024> doc;                             //Create object json get                     
   deserializeJson(doc, messageTemp);
   const String one = doc["data"];
   JsonArray Array = doc["data"].as<JsonArray>();
@@ -234,10 +232,10 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
   }
   
   display.clearDisplay();
-  display.setTextSize(2);             
+  display.setTextSize(2);                                   //Display setting
   display.setTextColor(WHITE);
-  for(int i = 0; i < SIZE; i++){
-    for(int j = 0; j < SIZE; j++){
+  for(int i = 0; i < SIZE; i++){                            //Create cycle in cycle to fill
+    for(int j = 0; j < SIZE; j++){                
       if(Array[j][i] == 0){
         display.setCursor(23+i*30,2+j*23);             
         display.println("0"); 
@@ -249,29 +247,29 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){
       }
     }
   } 
-  matrix_check();
+  matrix_check();                                           //Check win
   display.clearDisplay();
   display.display();
   
   move_win();
 }
 
-void IRAM_ATTR isr() {
-  conf_button_pressed = !conf_button_pressed;
+void IRAM_ATTR isr() {                                      //Create function interrupt
+  conf_button_pressed = !conf_button_pressed;               //Pining button
 }
 
-void init_wire(){
-  Wire.begin();
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+void init_wire(){                                           //Create function init wire
+  Wire.begin();                                             //Init work I2C bus
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {          //Audit physical connect oled
     Serial.println("SSD1306 allocation failed");
     for(;;);
   } 
 }
 
-void pr_win(){
-  display.setTextSize(2);             
+void pr_win(){                                              //Create function printing win
+  display.setTextSize(2);                                   //Display setting
   display.setTextColor(WHITE);
-  for(int i = 0; i < SIZE; i++){
+  for(int i = 0; i < SIZE; i++){                            //Create cycle in cycle to fill
     for(int j = 0; j < SIZE; j++){
       if(Array[j][i] == 0){
         display.setCursor(23+i*30,2+j*23);             
@@ -285,4 +283,5 @@ void pr_win(){
     }
   }
 }
+
 #endif

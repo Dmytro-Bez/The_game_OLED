@@ -1,10 +1,10 @@
 /*----------LIBRARIES----------*/
-#include "funk.h"
+#include "funk.h"                                         //Connect librarise
 
 /*----------VARIABLES----------*/
-unsigned long currentMillis = 0;
+unsigned long currentMillis = 0;                          //Create variable mil.sec
 unsigned long previousMillis = 0;
-const long interval = 500;
+const long interval = 500;                                //Create variable interval
 
 /*----------SETUP----------*/
 void setup() {
@@ -17,22 +17,22 @@ void setup() {
 /*----------LOOP----------*/
 void loop() {
   
-  if(!client.connected()){
+  if(!client.connected()){                                //Check connect AWS
     connect_aws();
   }
-  client.loop();
+  client.loop();                                          //Poll client
 
-  currentMillis = millis();
+  currentMillis = millis();                               //Call delay functions
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
-    conf_button_pressed = digitalRead(BUTTON_PIN);          //In the loop, read whether the button is pressed
-    if((conf_button_pressed)){
-      first_menu();
+    conf_button_pressed = digitalRead(BUTTON_PIN);        //In the loop, read whether the button is pressed
+    if((conf_button_pressed)){                            //wait by pressing the button
+      first_menu();                                       //If you press the button, go to the first menu
     } else {
-      if(matrix_check()){
-        move_win();
+      if(matrix_check()){                                 //Check array on the win
+        move_win();                                       //If someone wins, go to the first menu and repeat the process of filling the matrix
       } else {
-        return_game();
+        return_game();                                    //If not, then the problems with entering the matrix or field are not filled
       }
     }
  }
