@@ -78,7 +78,7 @@ void second_menu(){                                       //Create game board dr
   display.setCursor(22,15);
   client.setCallback(callback);                           //Connect and set callback
   display.display();
-  
+
 //  pr_win();                                           //Testing win
 }
 
