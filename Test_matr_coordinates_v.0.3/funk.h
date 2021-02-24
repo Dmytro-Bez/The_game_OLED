@@ -15,8 +15,6 @@
 #define SCREEN_HEIGHT 64                                  //OLED display height, in pixels
 #define BUTTON_PIN 4                                      //button
 #define SIZE 3                                            //size arr
-#define NX 'X'                                            //X
-#define NY '0'                                            //0
 #define DEVICE_NAME "TIC"                                 //The name of the device. This MUST match up with the name defined in the AWS console 
 
 /*----------VARIABLES----------*/
@@ -29,26 +27,20 @@ const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broke
 WiFiClient espClient;                                     //Create client wifi
 PubSubClient client(espClient);                           //Create client messege mqtt
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);             //Create object display
-int Array[SIZE][SIZE] = {{0,0,3}, {0,1,1}, {1,1,0}};      //Create test array
+int Array[SIZE][SIZE] = {{0,1,1}, {0,1,1}, {1,1,0}};      //Create test array
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
 void first_menu();                                        //Input menu function
-void get_print_win();                                     //Winning function
 void IRAM_ATTR isr();                                     //Button interuption funtion
 void second_menu();                                       //Game board drawing function
-void print_matrix();                                      //Array print function
 bool connect_aws();                                       //Function connect AWS
 void start_config();                                      //Settings function  
 bool connect_wifi();                                      //Function connect Wifi
-void disconnect_wifi();                                   //Disconnect network
 void callback(char* topic, byte* message, unsigned int length);               //Function callback
 void get_data_to_aws(String topic, byte* message, unsigned int length);       //Function get data to aws
 void mess_aws();                                          //Function mess AWS
-void get_win();                                           //Function get win
 void pr_win();                                            //Function print win
-void final_game();                                        //Function final game
-void print_final();                                       //Function print final
 void move_win();                                          //Function move win
 void return_game();                                       //Function return game
 bool matrix_check();                                      //Function matrix check
@@ -87,7 +79,7 @@ void second_menu(){                                       //Create game board dr
   client.setCallback(callback);                           //Connect and set callback
   display.display();
   
-  //pr_win();                                           //Testing win
+//  pr_win();                                           //Testing win
 }
 
 bool matrix_check(){                                      //Create function matrix check
