@@ -29,9 +29,11 @@ void loop() {
     if((conf_button_pressed)){                            //wait by pressing the button
       first_menu();                                       //If you press the button, go to the first menu
     } else {
-      if(!matrix_check()){                                 //Check array on the win
+      if(!matrix_check()){                                //Check array on the win
+        //return_game();
         move_win();                                       //If someone wins, go to the first menu and repeat the process of filling the matrix
       } else {
+        //move_win();
         return_game();                                    //If not, then the problems with entering the matrix or field are not filled
       }
     }

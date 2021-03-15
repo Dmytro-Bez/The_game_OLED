@@ -21,8 +21,8 @@
 bool conf_button_pressed = false;                         //Variable to work button
 bool O_win = false;                                       //Variable win '0'
 bool X_win = false;                                       //Variable win 'X'
-const char* ssid = "EE";                                  //Variable network
-const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
+const char* ssid = "***";                                  //Variable network
+const char* password = "***";                   // Replace the next variables with your SSID/Password combination
 const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broker IP address, example const char* mqtt_server = "Х.Х.Х.Х"
 WiFiClient espClient;                                     //Create client wifi
 PubSubClient client(espClient);                           //Create client messege mqtt
@@ -153,7 +153,7 @@ void move_win(){                                            //Create function mo
     display.println("Please."); 
     display.println("Pressed button!");
     display.display();
-  }
+  } 
 }
 
 void return_game(){                                       //Create function return game
@@ -243,7 +243,7 @@ void get_data_to_aws(String topic, byte* message, unsigned int length){         
   display.clearDisplay();
   display.display();
   
-  move_win();
+  //move_win();
 }
 
 void IRAM_ATTR isr() {                                      //Create function interrupt
