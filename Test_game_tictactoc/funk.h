@@ -21,13 +21,13 @@
 bool conf_button_pressed = false;                         //Variable to work button
 bool O_win = false;                                       //Variable win '0'
 bool X_win = false;                                       //Variable win 'X'
-const char* ssid = "***";                                  //Variable network
-const char* password = "***";                   // Replace the next variables with your SSID/Password combination
+const char* ssid = "EE";                                  //Variable network
+const char* password = "EE@05kilogram";                   // Replace the next variables with your SSID/Password combination
 const char* mqtt_server = "192.168.1.113";                // Add your MQTT Broker IP address, example const char* mqtt_server = "Х.Х.Х.Х"
 WiFiClient espClient;                                     //Create client wifi
 PubSubClient client(espClient);                           //Create client messege mqtt
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);             //Create object display
-int Array[SIZE][SIZE] = {{0,1,1}, {0,1,1}, {1,1,0}};      //Create test array
+int Array[SIZE][SIZE] = {{0,0,1}, {0,1,1}, {0,1,0}};      //Create test array
 
 /*----------PROTOTYPE FUNCTIONS----------*/
 void init_wire();                                         //Initialization I2C
@@ -79,7 +79,7 @@ void second_menu(){                                       //Create game board dr
   client.setCallback(callback);                           //Connect and set callback
   display.display();
 
-//  pr_win();                                           //Testing win
+  pr_win();                                           //Testing win
 }
 
 bool matrix_check(){                                      //Create function matrix check
@@ -177,7 +177,7 @@ bool connect_wifi(){                                     //Create function conne
     //Serial.print(".");
     conf_status = false;
   }
-  //Serial.println("WiFi connected");
+  Serial.println("WiFi connected");
   conf_status = true;
   return conf_status;
 }
@@ -186,7 +186,7 @@ bool connect_aws(){                                     //Create function connec
   bool conf_status = false;
   while (!client.connected()){                          // Loop until we're reconnected
     if (client.connect("ESP32Client")) {                // Attempt to connect
-      //Serial.println("MQTT connected");
+      Serial.println("MQTT connected");
       client.subscribe("/tic");                         // Subscribe
       conf_status = true;
     } else {

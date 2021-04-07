@@ -17,10 +17,10 @@ void setup() {
 /*----------LOOP----------*/
 void loop() {
   
-  if(!client.connected()){                                //Check connect AWS
-    connect_aws();
-  }
-  client.loop();                                          //Poll client
+//  if(!client.connected()){                                //Check connect AWS
+//    connect_aws();
+//  }
+//  client.loop();                                          //Poll client
 
   currentMillis = millis();                               //Call delay functions
   if (currentMillis - previousMillis >= interval) {
@@ -30,11 +30,11 @@ void loop() {
       first_menu();                                       //If you press the button, go to the first menu
     } else {
       if(!matrix_check()){                                //Check array on the win
-        //return_game();
-        move_win();                                       //If someone wins, go to the first menu and repeat the process of filling the matrix
+        return_game();
+        //move_win();                                       //If someone wins, go to the first menu and repeat the process of filling the matrix
       } else {
-        //move_win();
-        return_game();                                    //If not, then the problems with entering the matrix or field are not filled
+        move_win();
+        //return_game();                                    //If not, then the problems with entering the matrix or field are not filled
       }
     }
  }
